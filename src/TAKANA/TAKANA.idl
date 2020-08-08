@@ -1,0 +1,29 @@
+// TAKANA.idl : type library source for TAKANA.exe
+
+// This file will be processed by the MIDL compiler to produce the
+// type library (TAKANA.tlb).
+
+[ uuid(fb1df335-877e-423e-b8b2-fc509949c1ea), version(1.0) ]
+library TAKANA
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	//  Primary dispatch interface for CTAKANADoc
+
+	[ uuid(012ecf19-e7da-4d0c-b840-5b95fbcac204) ]
+	dispinterface ITAKANA
+	{
+		properties:
+
+		methods:
+	};
+
+	//  Class information for CTAKANADoc
+
+	[ uuid(f0a3386e-6ab4-432f-89ad-68be1ec8a3d9) ]
+	coclass CTAKANADoc
+	{
+		[default] dispinterface ITAKANA;
+	};
+};

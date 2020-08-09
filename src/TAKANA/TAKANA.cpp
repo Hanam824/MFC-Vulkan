@@ -35,6 +35,8 @@ BEGIN_MESSAGE_MAP(CTAKANAApp, CWinAppEx)
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, &CWinAppEx::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, &CWinAppEx::OnFileOpen)
+	// Standard print setup command
+	ON_COMMAND(ID_FILE_PRINT_SETUP, &CWinAppEx::OnFilePrintSetup)
 END_MESSAGE_MAP()
 
 
@@ -64,16 +66,6 @@ CTAKANAApp::CTAKANAApp() noexcept
 // The one and only CTAKANAApp object
 
 CTAKANAApp theApp;
-// This identifier was generated to be statistically unique for your app
-// You may change it if you prefer to choose a specific identifier
-
-// {f0a3386e-6ab4-432f-89ad-68be1ec8a3d9}
-static const CLSID clsid =
-{0xf0a3386e,0x6ab4,0x432f,{0x89,0xad,0x68,0xbe,0x1e,0xc8,0xa3,0xd9}};
-
-const GUID CDECL _tlid = {0xfb1df335,0x877e,0x423e,{0xb8,0xb2,0xfc,0x50,0x99,0x49,0xc1,0xea}};
-const WORD _wVerMajor = 1;
-const WORD _wVerMinor = 0;
 
 
 // CTAKANAApp initialization
@@ -139,16 +131,6 @@ BOOL CTAKANAApp::InitInstance()
 	if (!pDocTemplate)
 		return FALSE;
 	AddDocTemplate(pDocTemplate);
-	// Connect the COleTemplateServer to the document template
-	//  The COleTemplateServer creates new documents on behalf
-	//  of requesting OLE containers by using information
-	//  specified in the document template
-	m_server.ConnectTemplate(clsid, pDocTemplate, FALSE);
-	// Register all OLE server factories as running.  This enables the
-	//  OLE libraries to create objects from other applications
-	COleTemplateServer::RegisterAll();
-		// Note: MDI applications register all server objects without regard
-		//  to the /Embedding or /Automation on the command line
 
 	// create main MDI Frame window
 	CMainFrame* pMainFrame = new CMainFrame;
@@ -165,35 +147,13 @@ BOOL CTAKANAApp::InitInstance()
 	ParseCommandLine(cmdInfo);
 
 
-	// App was launched with /Embedding or /Automation switch.
-	// Run app as automation server.
-	if (cmdInfo.m_bRunEmbedded || cmdInfo.m_bRunAutomated)
-	{
-		// Don't show the main window
-		return TRUE;
-	}
-	// App was launched with /Unregserver or /Unregister switch.  Unregister
-	// typelibrary.  Other unregistration occurs in ProcessShellCommand().
-	else if (cmdInfo.m_nShellCommand == CCommandLineInfo::AppUnregister)
-	{
-		m_server.UpdateRegistry(OAT_DISPATCH_OBJECT, nullptr, nullptr, FALSE);
-		AfxOleUnregisterTypeLib(_tlid, _wVerMajor, _wVerMinor);
-	}
-	// App was launched standalone or with other switches (e.g. /Register
-	// or /Regserver).  Update registry entries, including typelibrary.
-	else
-	{
-		m_server.UpdateRegistry(OAT_DISPATCH_OBJECT);
-		COleObjectFactory::UpdateRegistryAll();
-		AfxOleRegisterTypeLib(AfxGetInstanceHandle(), _tlid);
-	}
 
 	// Dispatch commands specified on the command line.  Will return FALSE if
 	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
 	if (!ProcessShellCommand(cmdInfo))
 		return FALSE;
 	// The main window has been initialized, so show and update it
-	pMainFrame->ShowWindow(m_nCmdShow);
+	pMainFrame->ShowWindow(SW_SHOWMAXIMIZED);
 	pMainFrame->UpdateWindow();
 
 	return TRUE;
@@ -232,7 +192,6 @@ protected:
 
 CAboutDlg::CAboutDlg() noexcept : CDialogEx(IDD_ABOUTBOX)
 {
-	EnableActiveAccessibility();
 }
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)

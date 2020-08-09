@@ -14,8 +14,10 @@
 
 #pragma once
 
+#include "../TAKANA_gui/TAKANAViewBase.h"
 
-class CTAKANAView : public CView
+
+class CTAKANAView : public CTAKANAViewBase
 {
 protected: // create from serialization only
 	CTAKANAView() noexcept;
@@ -33,6 +35,9 @@ public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 protected:
+	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
+	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
+	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 
 // Implementation
 public:

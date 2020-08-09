@@ -30,9 +30,13 @@
 
 // CTAKANAView
 
-IMPLEMENT_DYNCREATE(CTAKANAView, CView)
+IMPLEMENT_DYNCREATE(CTAKANAView, CTAKANAViewBase)
 
-BEGIN_MESSAGE_MAP(CTAKANAView, CView)
+BEGIN_MESSAGE_MAP(CTAKANAView, CTAKANAViewBase)
+	// Standard printing commands
+	ON_COMMAND(ID_FILE_PRINT, &CTAKANAViewBase::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CTAKANAViewBase::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CTAKANAView::OnFilePrintPreview)
 	ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
 END_MESSAGE_MAP()
@@ -41,7 +45,6 @@ END_MESSAGE_MAP()
 
 CTAKANAView::CTAKANAView() noexcept
 {
-	EnableActiveAccessibility();
 	// TODO: add construction code here
 
 }
@@ -55,7 +58,7 @@ BOOL CTAKANAView::PreCreateWindow(CREATESTRUCT& cs)
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
 
-	return CView::PreCreateWindow(cs);
+	return CTAKANAViewBase::PreCreateWindow(cs);
 }
 
 // CTAKANAView drawing
@@ -68,6 +71,33 @@ void CTAKANAView::OnDraw(CDC* /*pDC*/)
 		return;
 
 	// TODO: add draw code for native data here
+}
+
+
+// CTAKANAView printing
+
+
+void CTAKANAView::OnFilePrintPreview()
+{
+#ifndef SHARED_HANDLERS
+	AFXPrintPreview(this);
+#endif
+}
+
+BOOL CTAKANAView::OnPreparePrinting(CPrintInfo* pInfo)
+{
+	// default preparation
+	return DoPreparePrinting(pInfo);
+}
+
+void CTAKANAView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
+{
+	// TODO: add extra initialization before printing
+}
+
+void CTAKANAView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
+{
+	// TODO: add cleanup after printing
 }
 
 void CTAKANAView::OnRButtonUp(UINT /* nFlags */, CPoint point)
@@ -89,12 +119,12 @@ void CTAKANAView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 #ifdef _DEBUG
 void CTAKANAView::AssertValid() const
 {
-	CView::AssertValid();
+	CTAKANAViewBase::AssertValid();
 }
 
 void CTAKANAView::Dump(CDumpContext& dc) const
 {
-	CView::Dump(dc);
+	CTAKANAViewBase::Dump(dc);
 }
 
 CTAKANADoc* CTAKANAView::GetDocument() const // non-debug version is inline

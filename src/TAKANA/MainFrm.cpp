@@ -34,15 +34,19 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
 	ON_COMMAND(ID_VIEW_CAPTION_BAR, &CMainFrame::OnViewCaptionBar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_CAPTION_BAR, &CMainFrame::OnUpdateViewCaptionBar)
 	ON_COMMAND(ID_TOOLS_OPTIONS, &CMainFrame::OnOptions)
+	ON_COMMAND(ID_VIEW_OUTPUTWND, &CMainFrame::OnViewOutputWindow)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_OUTPUTWND, &CMainFrame::OnUpdateViewOutputWindow)
+	ON_COMMAND(ID_VIEW_PROPERTIESWND, &CMainFrame::OnViewPropertiesWindow)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_PROPERTIESWND, &CMainFrame::OnUpdateViewPropertiesWindow)
+	ON_WM_SETTINGCHANGE()
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
 
 CMainFrame::CMainFrame() noexcept
 {
-	EnableActiveAccessibility();
 	// TODO: add member initialization code here
-	theApp.m_nAppLook = theApp.GetInt(_T("ApplicationLook"), ID_VIEW_APPLOOK_WINDOWS_7);
+	theApp.m_nAppLook = theApp.GetInt(_T("ApplicationLook"), ID_VIEW_APPLOOK_OFF_2007_BLUE);
 }
 
 CMainFrame::~CMainFrame()
@@ -107,6 +111,19 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Outlook bar is created and docking on the left side should be allowed.
 	EnableDocking(CBRS_ALIGN_LEFT);
 	EnableAutoHidePanes(CBRS_ALIGN_RIGHT);
+
+	// create docking windows
+	if (!CreateDockingWindows())
+	{
+		TRACE0("Failed to create docking windows\n");
+		return -1;
+	}
+
+	m_wndOutput.EnableDocking(CBRS_ALIGN_ANY);
+	DockPane(&m_wndOutput);
+	m_wndProperties.EnableDocking(CBRS_ALIGN_ANY);
+	DockPane(&m_wndProperties);
+
 	// set the visual manager and style based on persisted value
 	OnApplicationLook(theApp.m_nAppLook);
 
@@ -127,7 +144,48 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
 
+	cs.style = WS_OVERLAPPED | WS_CAPTION | FWS_ADDTOTITLE
+		 | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_MAXIMIZE | WS_SYSMENU;
+
 	return TRUE;
+}
+
+BOOL CMainFrame::CreateDockingWindows()
+{
+	BOOL bNameValid;
+	// Create output window
+	CString strOutputWnd;
+	bNameValid = strOutputWnd.LoadString(IDS_OUTPUT_WND);
+	ASSERT(bNameValid);
+	if (!m_wndOutput.Create(strOutputWnd, this, CRect(0, 0, 100, 100), TRUE, ID_VIEW_OUTPUTWND, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_BOTTOM | CBRS_FLOAT_MULTI))
+	{
+		TRACE0("Failed to create Output window\n");
+		return FALSE; // failed to create
+	}
+
+	// Create properties window
+	CString strPropertiesWnd;
+	bNameValid = strPropertiesWnd.LoadString(IDS_PROPERTIES_WND);
+	ASSERT(bNameValid);
+	if (!m_wndProperties.Create(strPropertiesWnd, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_PROPERTIESWND, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
+	{
+		TRACE0("Failed to create Properties window\n");
+		return FALSE; // failed to create
+	}
+
+	SetDockingWindowIcons(theApp.m_bHiColorIcons);
+	return TRUE;
+}
+
+void CMainFrame::SetDockingWindowIcons(BOOL bHiColorIcons)
+{
+	HICON hOutputBarIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_OUTPUT_WND_HC : IDI_OUTPUT_WND), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
+	m_wndOutput.SetIcon(hOutputBarIcon, FALSE);
+
+	HICON hPropertiesBarIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_PROPERTIES_WND_HC : IDI_PROPERTIES_WND), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
+	m_wndProperties.SetIcon(hPropertiesBarIcon, FALSE);
+
+	UpdateMDITabbedBarsIcons();
 }
 
 BOOL CMainFrame::CreateOutlookBar(CMFCOutlookBar& bar, UINT uiID, CMFCShellTreeCtrl& tree, CCalendarBar& calendar, int nInitialWidth)
@@ -312,6 +370,7 @@ void CMainFrame::OnApplicationLook(UINT id)
 		m_wndRibbonBar.SetWindows7Look(FALSE);
 	}
 
+	m_wndOutput.UpdateFonts();
 	RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME | RDW_ERASE);
 
 	theApp.WriteInt(_T("ApplicationLook"), theApp.m_nAppLook);
@@ -342,3 +401,35 @@ void CMainFrame::OnOptions()
 	delete pOptionsDlg;
 }
 
+void CMainFrame::OnViewOutputWindow()
+{
+	// Show or activate the pane, depending on current state.  The
+	// pane can only be closed via the [x] button on the pane frame.
+	m_wndOutput.ShowPane(TRUE, FALSE, TRUE);
+	m_wndOutput.SetFocus();
+}
+
+void CMainFrame::OnUpdateViewOutputWindow(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(TRUE);
+}
+
+void CMainFrame::OnViewPropertiesWindow()
+{
+	// Show or activate the pane, depending on current state.  The
+	// pane can only be closed via the [x] button on the pane frame.
+	m_wndProperties.ShowPane(TRUE, FALSE, TRUE);
+	m_wndProperties.SetFocus();
+}
+
+void CMainFrame::OnUpdateViewPropertiesWindow(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(TRUE);
+}
+
+
+void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
+{
+	CMDIFrameWndEx::OnSettingChange(uFlags, lpszSection);
+	m_wndOutput.UpdateFonts();
+}

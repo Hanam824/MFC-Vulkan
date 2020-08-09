@@ -3,7 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.1209
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TAKANA", "TAKANA\TAKANA.vcxproj", "{BB5815E1-2AB7-4026-B047-CBC5E625F21C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TAKANA", "TAKANA\TAKANA.vcxproj", "{450CC55B-AA91-4A5A-86FF-B44B2A3A7117}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5A3BC7FB-8CEE-4FAB-92CE-7AF53D8C4BF5} = {5A3BC7FB-8CEE-4FAB-92CE-7AF53D8C4BF5}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TAKANA_gui", "TAKANA_gui\TAKANA_gui.vcxproj", "{5A3BC7FB-8CEE-4FAB-92CE-7AF53D8C4BF5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,19 +18,27 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BB5815E1-2AB7-4026-B047-CBC5E625F21C}.Debug|x64.ActiveCfg = Debug|x64
-		{BB5815E1-2AB7-4026-B047-CBC5E625F21C}.Debug|x64.Build.0 = Debug|x64
-		{BB5815E1-2AB7-4026-B047-CBC5E625F21C}.Debug|x86.ActiveCfg = Debug|Win32
-		{BB5815E1-2AB7-4026-B047-CBC5E625F21C}.Debug|x86.Build.0 = Debug|Win32
-		{BB5815E1-2AB7-4026-B047-CBC5E625F21C}.Release|x64.ActiveCfg = Release|x64
-		{BB5815E1-2AB7-4026-B047-CBC5E625F21C}.Release|x64.Build.0 = Release|x64
-		{BB5815E1-2AB7-4026-B047-CBC5E625F21C}.Release|x86.ActiveCfg = Release|Win32
-		{BB5815E1-2AB7-4026-B047-CBC5E625F21C}.Release|x86.Build.0 = Release|Win32
+		{450CC55B-AA91-4A5A-86FF-B44B2A3A7117}.Debug|x64.ActiveCfg = Debug|x64
+		{450CC55B-AA91-4A5A-86FF-B44B2A3A7117}.Debug|x64.Build.0 = Debug|x64
+		{450CC55B-AA91-4A5A-86FF-B44B2A3A7117}.Debug|x86.ActiveCfg = Debug|Win32
+		{450CC55B-AA91-4A5A-86FF-B44B2A3A7117}.Debug|x86.Build.0 = Debug|Win32
+		{450CC55B-AA91-4A5A-86FF-B44B2A3A7117}.Release|x64.ActiveCfg = Release|x64
+		{450CC55B-AA91-4A5A-86FF-B44B2A3A7117}.Release|x64.Build.0 = Release|x64
+		{450CC55B-AA91-4A5A-86FF-B44B2A3A7117}.Release|x86.ActiveCfg = Release|Win32
+		{450CC55B-AA91-4A5A-86FF-B44B2A3A7117}.Release|x86.Build.0 = Release|Win32
+		{5A3BC7FB-8CEE-4FAB-92CE-7AF53D8C4BF5}.Debug|x64.ActiveCfg = Debug|x64
+		{5A3BC7FB-8CEE-4FAB-92CE-7AF53D8C4BF5}.Debug|x64.Build.0 = Debug|x64
+		{5A3BC7FB-8CEE-4FAB-92CE-7AF53D8C4BF5}.Debug|x86.ActiveCfg = Debug|Win32
+		{5A3BC7FB-8CEE-4FAB-92CE-7AF53D8C4BF5}.Debug|x86.Build.0 = Debug|Win32
+		{5A3BC7FB-8CEE-4FAB-92CE-7AF53D8C4BF5}.Release|x64.ActiveCfg = Release|x64
+		{5A3BC7FB-8CEE-4FAB-92CE-7AF53D8C4BF5}.Release|x64.Build.0 = Release|x64
+		{5A3BC7FB-8CEE-4FAB-92CE-7AF53D8C4BF5}.Release|x86.ActiveCfg = Release|Win32
+		{5A3BC7FB-8CEE-4FAB-92CE-7AF53D8C4BF5}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {7D8AE727-5E9F-4AF0-9A25-7C5DAC3869C3}
+		SolutionGuid = {659CDCA5-B7F4-4C41-BA0D-93BDC6D24EA7}
 	EndGlobalSection
 EndGlobal

@@ -13,6 +13,8 @@
 //
 
 #pragma once
+#include "OutputWnd.h"
+#include "PropertiesWnd.h"
 #include "CalendarBar.h"
 #include "Resource.h"
 
@@ -51,6 +53,8 @@ protected:  // control bar embedded members
 	CMFCRibbonApplicationButton m_MainButton;
 	CMFCToolBarImages m_PanelImages;
 	CMFCRibbonStatusBar  m_wndStatusBar;
+	COutputWnd        m_wndOutput;
+	CPropertiesWnd    m_wndProperties;
 	COutlookBar       m_wndNavigationBar;
 	CMFCShellTreeCtrl m_wndTree;
 	CCalendarBar      m_wndCalendar;
@@ -62,11 +66,18 @@ protected:
 	afx_msg void OnWindowManager();
 	afx_msg void OnApplicationLook(UINT id);
 	afx_msg void OnUpdateApplicationLook(CCmdUI* pCmdUI);
+	afx_msg void OnViewOutputWindow();
+	afx_msg void OnUpdateViewOutputWindow(CCmdUI* pCmdUI);
+	afx_msg void OnViewPropertiesWindow();
+	afx_msg void OnUpdateViewPropertiesWindow(CCmdUI* pCmdUI);
 	afx_msg void OnViewCaptionBar();
 	afx_msg void OnUpdateViewCaptionBar(CCmdUI* pCmdUI);
 	afx_msg void OnOptions();
+	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
 	DECLARE_MESSAGE_MAP()
 
+	BOOL CreateDockingWindows();
+	void SetDockingWindowIcons(BOOL bHiColorIcons);
 	BOOL CreateOutlookBar(CMFCOutlookBar& bar, UINT uiID, CMFCShellTreeCtrl& tree, CCalendarBar& calendar, int nInitialWidth);
 	BOOL CreateCaptionBar();
 

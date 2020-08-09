@@ -29,7 +29,6 @@ public:
 public:
 
 // Overrides
-	public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 
 // Implementation
@@ -42,5 +41,8 @@ public:
 
 // Generated message map functions
 protected:
+	afx_msg void OnFilePrint();
+	afx_msg void OnFilePrintPreview();
+	afx_msg void OnUpdateFilePrintPreview(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 };

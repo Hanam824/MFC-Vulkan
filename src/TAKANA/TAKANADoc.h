@@ -51,11 +51,6 @@ protected:
 protected:
 	DECLARE_MESSAGE_MAP()
 
-	// Generated OLE dispatch map functions
-
-	DECLARE_DISPATCH_MAP()
-	DECLARE_INTERFACE_MAP()
-
 #ifdef SHARED_HANDLERS
 	// Helper function that sets search content for a Search Handler
 	void SetSearchContent(const CString& value);

@@ -199,9 +199,9 @@
     <ClInclude Include="FileView.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MainFrm.h" />
-    <ClInclude Include="MFCApplication.h" />
-    <ClInclude Include="MFCApplicationDoc.h" />
-    <ClInclude Include="MFCApplicationView.h" />
+    <ClInclude Include="MFCVulkan.h" />
+    <ClInclude Include="MFCVulkanDoc.h" />
+    <ClInclude Include="MFCVulkanView.h" />
     <ClInclude Include="OutputWnd.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PropertiesWnd.h" />

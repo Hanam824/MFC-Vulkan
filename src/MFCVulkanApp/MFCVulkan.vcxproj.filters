@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MFCApplication.h">
+    <ClInclude Include="MFCVulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="framework.h">
@@ -30,10 +30,10 @@
     <ClInclude Include="ChildFrm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MFCApplicationDoc.h">
+    <ClInclude Include="MFCVulkanDoc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MFCApplicationView.h">
+    <ClInclude Include="MFCVulkanView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">

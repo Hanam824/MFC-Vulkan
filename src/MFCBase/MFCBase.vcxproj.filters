@@ -27,7 +27,7 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ViewBase.cpp">
+    <ClCompile Include="MFCViewBase.cpp">
       <Filter>Base</Filter>
     </ClCompile>
   </ItemGroup>
@@ -52,7 +52,7 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ViewBase.h">
+    <ClInclude Include="MFCViewBase.h">
       <Filter>Base</Filter>
     </ClInclude>
   </ItemGroup>

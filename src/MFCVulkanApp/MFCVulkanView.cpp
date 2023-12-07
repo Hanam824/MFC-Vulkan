@@ -30,9 +30,9 @@
 
 // CMFCVulkanView
 
-IMPLEMENT_DYNCREATE(CMFCVulkanView, CViewBase)
+IMPLEMENT_DYNCREATE(CMFCVulkanView, MFCViewBase)
 
-BEGIN_MESSAGE_MAP(CMFCVulkanView, CViewBase)
+BEGIN_MESSAGE_MAP(CMFCVulkanView, MFCViewBase)
 	ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
 END_MESSAGE_MAP()
@@ -54,7 +54,7 @@ BOOL CMFCVulkanView::PreCreateWindow(CREATESTRUCT& cs)
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
 
-	return CViewBase::PreCreateWindow(cs);
+	return MFCViewBase::PreCreateWindow(cs);
 }
 
 // CMFCVulkanView drawing
@@ -88,12 +88,12 @@ void CMFCVulkanView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 #ifdef _DEBUG
 void CMFCVulkanView::AssertValid() const
 {
-	CViewBase::AssertValid();
+	MFCViewBase::AssertValid();
 }
 
 void CMFCVulkanView::Dump(CDumpContext& dc) const
 {
-	CViewBase::Dump(dc);
+	MFCViewBase::Dump(dc);
 }
 
 CMFCVulkanDoc* CMFCVulkanView::GetDocument() const // non-debug version is inline

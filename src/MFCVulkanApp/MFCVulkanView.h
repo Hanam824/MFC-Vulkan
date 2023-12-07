@@ -14,9 +14,9 @@
 
 #pragma once
 
-#include "../MFCBase/ViewBase.h"
+#include "../MFCBase/MFCViewBase.h"
 
-class CMFCVulkanView : public CViewBase
+class CMFCVulkanView : public MFCViewBase
 {
 protected: // create from serialization only
 	CMFCVulkanView() noexcept;

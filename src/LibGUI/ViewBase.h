@@ -1,10 +1,10 @@
-
+#pragma once
 
 class CViewBase : public CView
 {
 public:
 	CViewBase();
-	~CViewBase();
+	virtual ~CViewBase();
 
 private:
 

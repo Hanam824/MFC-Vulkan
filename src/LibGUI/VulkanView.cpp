@@ -1,6 +1,11 @@
 #include "pch.h"
 #include "VulkanView.h"
 
+#include "VulkanTool.h"
+
+#include <filesystem>
+
+
 // avoid conflict std::max,min with minwindef
 #undef max
 #undef min
@@ -58,7 +63,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
 	return VK_FALSE;
 }
 
-static std::vector<char> readFile(const std::string& filename)
+static std::vector<char> readFile(const std::wstring& filename)
 {
 	std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
@@ -154,8 +159,8 @@ void CVulkanView::OnDestroy()
 
 void CVulkanView::drawFrame()
 {
-	device->waitForFences(1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
-	device->resetFences(1, &inFlightFences[currentFrame]);
+	VK_CHECK_RESULT_HPP(device->waitForFences(1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max()));
+	VK_CHECK_RESULT_HPP(device->resetFences(1, &inFlightFences[currentFrame]));
 
 	uint32_t imageIndex = device->acquireNextImageKHR(swapChain, std::numeric_limits<uint64_t>::max(),
 		imageAvailableSemaphores[currentFrame], nullptr).value;
@@ -192,7 +197,7 @@ void CVulkanView::drawFrame()
 	presentInfo.pImageIndices = &imageIndex;
 	presentInfo.pResults = nullptr; // Optional
 
-	presentQueue.presentKHR(presentInfo);
+	VK_CHECK_RESULT_HPP(presentQueue.presentKHR(presentInfo));
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
@@ -214,9 +219,9 @@ void CVulkanView::createInstance()
 		.setFlags(vk::InstanceCreateFlags())
 		.setPApplicationInfo(&m_VkAppInfo)
 		.setPEnabledExtensionNames(extensions)
-		.setEnabledExtensionCount(extensions.size())
+		.setEnabledExtensionCount(static_cast<uint32_t>(extensions.size()))
 		.setPpEnabledLayerNames(validationLayers.data())
-		.setEnabledLayerCount(validationLayers.size());
+		.setEnabledLayerCount(static_cast<uint32_t>(validationLayers.size()));
 
 	try {
 		m_VkInstance = vk::createInstanceUnique(instanceInfo, nullptr);
@@ -441,8 +446,13 @@ void CVulkanView::createRenderPass()
 
 void CVulkanView::createGraphicsPipeline()
 {
-	auto vertShaderCode = readFile("shaders/vert.spv");
-	auto fragShaderCode = readFile("shaders/frag.spv");
+	//TCHAR currentDirectory[MAX_PATH] = { 0 };
+	//GetModuleFileName(NULL, currentDirectory, MAX_PATH);
+
+	std::filesystem::path currentDirectory = std::filesystem::current_path();
+
+	auto vertShaderCode = readFile(currentDirectory.wstring() + _T("/shaders/vert.spv"));
+	auto fragShaderCode = readFile(currentDirectory.wstring() + _T("/shaders/frag.spv"));
 
 	auto vertShaderModule = createShaderModule(vertShaderCode);
 	auto fragShaderModule = createShaderModule(fragShaderCode);

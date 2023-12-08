@@ -59,7 +59,7 @@ BOOL CMFCVulkanView::PreCreateWindow(CREATESTRUCT& cs)
 
 // CMFCVulkanView drawing
 
-void CMFCVulkanView::OnDraw(CDC* /*pDC*/)
+void CMFCVulkanView::OnDraw(CDC* pDC)
 {
 	CMFCVulkanDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -67,6 +67,7 @@ void CMFCVulkanView::OnDraw(CDC* /*pDC*/)
 		return;
 
 	// TODO: add draw code for native data here
+	MFCViewBase::OnDraw(pDC);
 }
 
 void CMFCVulkanView::OnRButtonUp(UINT /* nFlags */, CPoint point)

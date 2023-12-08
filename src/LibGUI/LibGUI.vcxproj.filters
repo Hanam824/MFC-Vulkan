@@ -16,6 +16,9 @@
     <Filter Include="View">
       <UniqueIdentifier>{79ab1313-1eb5-4090-b0c3-ff68d5e563d7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{fbffc6d1-34e6-4a5a-b9c2-1fcae5b1425e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LibGUI.cpp">
@@ -35,6 +38,9 @@
     </ClCompile>
     <ClCompile Include="ViewBase.cpp">
       <Filter>View</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanTool.cpp">
+      <Filter>Tools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -66,6 +72,9 @@
     </ClInclude>
     <ClInclude Include="ViewBase.h">
       <Filter>View</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanTool.h">
+      <Filter>Tools</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

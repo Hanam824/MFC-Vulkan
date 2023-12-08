@@ -218,6 +218,7 @@
     </ClCompile>
     <ClCompile Include="ViewBase.cpp" />
     <ClCompile Include="VulkanCtrlView.cpp" />
+    <ClCompile Include="VulkanTool.cpp" />
     <ClCompile Include="VulkanView.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -231,6 +232,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="ViewBase.h" />
     <ClInclude Include="VulkanCtrlView.h" />
+    <ClInclude Include="VulkanTool.h" />
     <ClInclude Include="VulkanView.h" />
   </ItemGroup>
   <ItemGroup>

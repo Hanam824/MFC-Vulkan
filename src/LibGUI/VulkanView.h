@@ -1,9 +1,9 @@
+#pragma once
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 
 #include "ViewBase.h"
-
 
 #include <iostream>
 #include <fstream>
@@ -66,7 +66,7 @@ protected:
     void pickPhysicalDevice();
     void createLogicalDevice();
     void createSwapChain();
-    void  createImageViews();
+    void createImageViews();
     void createRenderPass();
     void createGraphicsPipeline();
     void createFramebuffers();

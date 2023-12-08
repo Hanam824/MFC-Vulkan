@@ -22,7 +22,8 @@
 
 #include "MFCVulkanDoc.h"
 #include "MFCVulkanView.h"
-
+#include "MainFrm.h"
+ 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -30,9 +31,9 @@
 
 // CMFCVulkanView
 
-IMPLEMENT_DYNCREATE(CMFCVulkanView, MFCViewBase)
+IMPLEMENT_DYNCREATE(CMFCVulkanView, CMFCViewBase)
 
-BEGIN_MESSAGE_MAP(CMFCVulkanView, MFCViewBase)
+BEGIN_MESSAGE_MAP(CMFCVulkanView, CMFCViewBase)
 	ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
 END_MESSAGE_MAP()
@@ -54,7 +55,15 @@ BOOL CMFCVulkanView::PreCreateWindow(CREATESTRUCT& cs)
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
 
-	return MFCViewBase::PreCreateWindow(cs);
+	return CMFCViewBase::PreCreateWindow(cs);
+}
+
+void CMFCVulkanView::OnInitialUpdate()
+{
+	CMFCViewBase::OnInitialUpdate();
+
+	// TODO: Initialize stuff after the document has been created
+
 }
 
 // CMFCVulkanView drawing
@@ -67,7 +76,7 @@ void CMFCVulkanView::OnDraw(CDC* pDC)
 		return;
 
 	// TODO: add draw code for native data here
-	MFCViewBase::OnDraw(pDC);
+	CMFCViewBase::OnDraw(pDC);
 }
 
 void CMFCVulkanView::OnRButtonUp(UINT /* nFlags */, CPoint point)
@@ -89,12 +98,12 @@ void CMFCVulkanView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 #ifdef _DEBUG
 void CMFCVulkanView::AssertValid() const
 {
-	MFCViewBase::AssertValid();
+	CMFCViewBase::AssertValid();
 }
 
 void CMFCVulkanView::Dump(CDumpContext& dc) const
 {
-	MFCViewBase::Dump(dc);
+	CMFCViewBase::Dump(dc);
 }
 
 CMFCVulkanDoc* CMFCVulkanView::GetDocument() const // non-debug version is inline

@@ -16,7 +16,7 @@
 
 #include "../MFCBase/MFCViewBase.h"
 
-class CMFCVulkanView : public MFCViewBase
+class CMFCVulkanView : public CMFCViewBase
 {
 protected: // create from serialization only
 	CMFCVulkanView() noexcept;
@@ -33,6 +33,7 @@ public:
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual void OnInitialUpdate();
 protected:
 
 // Implementation

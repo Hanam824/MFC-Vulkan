@@ -2,10 +2,10 @@
 #include "MFCViewBase.h"
 
 
-MFCViewBase::MFCViewBase()
+CMFCViewBase::CMFCViewBase()
 {
 }
 
-MFCViewBase::~MFCViewBase()
+CMFCViewBase::~CMFCViewBase()
 {
 }

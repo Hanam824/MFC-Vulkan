@@ -34,6 +34,8 @@ public:
 
 // Attributes
 public:
+	CRect getClientAreaRect() { CRect rect; m_wndClientArea.GetWindowRect(rect); return rect; }
+
 
 // Operations
 public:

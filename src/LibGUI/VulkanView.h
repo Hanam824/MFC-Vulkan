@@ -1,6 +1,5 @@
 #pragma once
 
-#define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 
 #include "ViewBase.h"
@@ -14,6 +13,10 @@
 #include <cstdlib>
 #include <optional>
 #include <set>
+
+#include "Utils.h"
+
+
 
 
 struct QueueFamilyIndices
@@ -43,12 +46,21 @@ public:
 
 public:
 	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
+    virtual void OnInitialUpdate();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 #ifndef _WIN32_WCE
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 #endif
+
+public:
+    HDC GetHDC() { return m_hDC; };
+    HGLRC GetHRC() { return m_hRC; };
+
+protected:
+    HGLRC	m_hRC;	// RC Handler
+    HDC		m_hDC;	// DC Handler
 
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -76,7 +88,6 @@ protected:
 
     void cleanupVulkanAPI();
 
-
     // support
 	bool checkValidationLayerSupport();
     vk::UniqueShaderModule createShaderModule(const std::vector<char>& code);
@@ -94,17 +105,21 @@ protected:
     vk::SurfaceKHR surface;
 
     vk::PhysicalDevice m_physicalDevice;
-    vk::UniqueDevice device;
+    vk::UniqueDevice m_device;
 
     vk::Queue graphicsQueue;
     vk::Queue presentQueue;
 
-    vk::SwapchainKHR swapChain;
-    std::vector<vk::Image> swapChainImages;
-    vk::Format swapChainImageFormat;
-    vk::Extent2D swapChainExtent;
-    std::vector<vk::ImageView> swapChainImageViews;
-    std::vector<vk::Framebuffer> swapChainFramebuffers;
+    //vk::SwapchainKHR swapChain;
+    //std::vector<vk::Image> swapChainImages;
+    //vk::Format swapChainImageFormat;
+    //vk::Extent2D swapChainExtent;
+    //std::vector<vk::ImageView> swapChainImageViews;
+    //std::vector<vk::Framebuffer> swapChainFramebuffers;
+
+    vk::Extent2D m_extent;
+    utils::SwapChainData m_swapChainData;
+    std::vector<vk::Framebuffer> m_framebuffers;
 
     vk::RenderPass renderPass;
     vk::PipelineLayout pipelineLayout;

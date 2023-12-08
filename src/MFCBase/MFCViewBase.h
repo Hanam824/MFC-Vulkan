@@ -2,11 +2,11 @@
 
 #include "../LibGUI/VulkanCtrlView.h"
 
-class AFX_EXT_CLASS MFCViewBase : public CVulkanCtrlView
+class AFX_EXT_CLASS CMFCViewBase : public CVulkanCtrlView
 {
 public:
-	MFCViewBase();
-	virtual ~MFCViewBase();
+	CMFCViewBase();
+	virtual ~CMFCViewBase();
 
 private:
 

@@ -1,14 +1,10 @@
 #include "pch.h"
-#include "VulkanView.h"
-
-#include "VulkanTool.h"
 
 #include <filesystem>
 
+#include "VulkanView.h"
+#include "VulkanTool.h"
 
-// avoid conflict std::max,min with minwindef
-#undef max
-#undef min
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -19,14 +15,10 @@ const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
 
-const std::vector<const char*> deviceExtensions = {
-	VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
-
-const std::vector<const char*> extensions =
+const std::vector<const char*> instanceExtensions =
 {
-	VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
 	VK_KHR_SURFACE_EXTENSION_NAME,
+	VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
 	VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 };
 
@@ -53,7 +45,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 	}
 }
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+static VKAPI_ATTR VkBool32 VKAPI_CALL fnDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
 	std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
@@ -110,6 +102,21 @@ void CVulkanView::OnDraw(CDC* pDC)
 	drawFrame();
 }
 
+void CVulkanView::OnInitialUpdate()
+{
+	// TODO: Initialize stuff after the document has been created
+	// we need actual size to create swapchain
+	createSwapChain();
+	createImageViews();
+	createRenderPass();
+	createGraphicsPipeline();
+	createFramebuffers();
+	createCommandPool();
+	createCommandBuffers();
+	createSyncObjects();
+
+}
+
 // CGLView diagnostics
 
 #ifdef _DEBUG
@@ -132,20 +139,15 @@ int CVulkanView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CViewBase::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
+	// TODO: Add your specialized creation code here
+	m_hDC = ::GetDC(m_hWnd);			// Get the Device context
+
 	//initialize vulkan API
 	createInstance();
 	setupDebugCallback();
 	createSurface();
 	pickPhysicalDevice();
 	createLogicalDevice();
-	createSwapChain();
-	createImageViews();
-	createRenderPass();
-	createGraphicsPipeline();
-	createFramebuffers();
-	createCommandPool();
-	createCommandBuffers();
-	createSyncObjects();
 
 	return 0;
 }
@@ -155,14 +157,16 @@ void CVulkanView::OnDestroy()
 	CViewBase::OnDestroy();
 
 	cleanupVulkanAPI();
+
+	::ReleaseDC(m_hWnd, m_hDC);
 }
 
 void CVulkanView::drawFrame()
 {
-	VK_CHECK_RESULT_HPP(device->waitForFences(1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max()));
-	VK_CHECK_RESULT_HPP(device->resetFences(1, &inFlightFences[currentFrame]));
+	VK_CHECK_RESULT_HPP(m_device->waitForFences(1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max()));
+	VK_CHECK_RESULT_HPP(m_device->resetFences(1, &inFlightFences[currentFrame]));
 
-	uint32_t imageIndex = device->acquireNextImageKHR(swapChain, std::numeric_limits<uint64_t>::max(),
+	uint32_t imageIndex = m_device->acquireNextImageKHR(m_swapChainData.swapChain, std::numeric_limits<uint64_t>::max(),
 		imageAvailableSemaphores[currentFrame], nullptr).value;
 
 	vk::SubmitInfo submitInfo = {};
@@ -191,7 +195,7 @@ void CVulkanView::drawFrame()
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores = signalSemaphores;
 
-	vk::SwapchainKHR swapChains[] = { swapChain };
+	vk::SwapchainKHR swapChains[] = { m_swapChainData.swapChain };
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
 	presentInfo.pImageIndices = &imageIndex;
@@ -218,8 +222,8 @@ void CVulkanView::createInstance()
 	auto instanceInfo = vk::InstanceCreateInfo()
 		.setFlags(vk::InstanceCreateFlags())
 		.setPApplicationInfo(&m_VkAppInfo)
-		.setPEnabledExtensionNames(extensions)
-		.setEnabledExtensionCount(static_cast<uint32_t>(extensions.size()))
+		.setPEnabledExtensionNames(instanceExtensions)
+		.setEnabledExtensionCount(static_cast<uint32_t>(instanceExtensions.size()))
 		.setPpEnabledLayerNames(validationLayers.data())
 		.setEnabledLayerCount(static_cast<uint32_t>(validationLayers.size()));
 
@@ -235,13 +239,11 @@ void CVulkanView::setupDebugCallback()
 {
 	if (!enableValidationLayers) return;
 
-	auto createInfo = vk::DebugUtilsMessengerCreateInfoEXT(
-		vk::DebugUtilsMessengerCreateFlagsEXT(),
-		vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-		vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
-		debugCallback,
-		nullptr
-	);
+	auto createInfo = vk::DebugUtilsMessengerCreateInfoEXT()
+		.setFlags(vk::DebugUtilsMessengerCreateFlagsEXT())
+		.setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError)
+		.setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance)
+		.setPfnUserCallback(fnDebugCallback);
 
 	// NOTE: Vulkan-hpp has methods for this, but they trigger linking errors...
 	//m_VkInstance->createDebugUtilsMessengerEXT(createInfo);
@@ -255,11 +257,6 @@ void CVulkanView::setupDebugCallback()
 
 void CVulkanView::createSurface()
 {
-	//VkSurfaceKHR rawSurface;
-	/*if (glfwCreateWindowSurface(*m_VkInstance, window, nullptr, &rawSurface) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create window surface!");
-	}*/
-
 	surface = m_VkInstance->createWin32SurfaceKHR(vk::Win32SurfaceCreateInfoKHR()
 		.setHinstance(GetModuleHandleA(0))
 		.setHwnd(m_hWnd)
@@ -273,46 +270,11 @@ void CVulkanView::pickPhysicalDevice()
 
 void CVulkanView::createLogicalDevice()
 {
-	QueueFamilyIndices indices = findQueueFamilies(m_physicalDevice);
+	auto graphicsAndPresentQueueFamilyIndex = utils::findGraphicsAndPresentQueueFamilyIndex(m_physicalDevice, surface);
+	m_device = utils::createDeviceUnique(m_physicalDevice, graphicsAndPresentQueueFamilyIndex.first, utils::getDeviceExtensions());
 
-	std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
-	std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
-
-	float queuePriority = 1.0f;
-
-	for (uint32_t queueFamily : uniqueQueueFamilies) {
-		queueCreateInfos.push_back({
-			vk::DeviceQueueCreateFlags(),
-			queueFamily,
-			1, // queueCount
-			&queuePriority
-			});
-	}
-
-	auto deviceFeatures = vk::PhysicalDeviceFeatures();
-	auto createInfo = vk::DeviceCreateInfo(
-		vk::DeviceCreateFlags(),
-		static_cast<uint32_t>(queueCreateInfos.size()),
-		queueCreateInfos.data()
-	);
-	createInfo.pEnabledFeatures = &deviceFeatures;
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
-
-	if (enableValidationLayers) {
-		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-		createInfo.ppEnabledLayerNames = validationLayers.data();
-	}
-
-	try {
-		device = m_physicalDevice.createDeviceUnique(createInfo);
-	}
-	catch (vk::SystemError err) {
-		throw std::runtime_error("failed to create logical device!");
-	}
-
-	graphicsQueue = device->getQueue(indices.graphicsFamily.value(), 0);
-	presentQueue = device->getQueue(indices.presentFamily.value(), 0);
+	graphicsQueue = m_device->getQueue(graphicsAndPresentQueueFamilyIndex.first, 0);
+	presentQueue = m_device->getQueue(graphicsAndPresentQueueFamilyIndex.second, 0);
 }
 
 void CVulkanView::createSwapChain()
@@ -321,59 +283,24 @@ void CVulkanView::createSwapChain()
 
 	vk::SurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
 	vk::PresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-	vk::Extent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
+	m_extent = chooseSwapExtent(swapChainSupport.capabilities);
 
-	uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-	if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
-		imageCount = swapChainSupport.capabilities.maxImageCount;
-	}
+	auto graphicsAndPresentQueueFamilyIndex = utils::findGraphicsAndPresentQueueFamilyIndex(m_physicalDevice, surface);
 
-	vk::SwapchainCreateInfoKHR createInfo(
-		vk::SwapchainCreateFlagsKHR(),
+	m_swapChainData = utils::SwapChainData(m_physicalDevice,
+		m_device.get(),
 		surface,
-		imageCount,
-		surfaceFormat.format,
-		surfaceFormat.colorSpace,
-		extent,
-		1, // imageArrayLayers
-		vk::ImageUsageFlagBits::eColorAttachment
-	);
+		m_extent,
+		vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc,
+		{},
+		graphicsAndPresentQueueFamilyIndex.first,
+		graphicsAndPresentQueueFamilyIndex.second);
 
-	QueueFamilyIndices indices = findQueueFamilies(m_physicalDevice);
-	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
-
-	if (indices.graphicsFamily != indices.presentFamily) {
-		createInfo.imageSharingMode = vk::SharingMode::eConcurrent;
-		createInfo.queueFamilyIndexCount = 2;
-		createInfo.pQueueFamilyIndices = queueFamilyIndices;
-	}
-	else {
-		createInfo.imageSharingMode = vk::SharingMode::eExclusive;
-	}
-
-	createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
-	createInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-	createInfo.presentMode = presentMode;
-	createInfo.clipped = VK_TRUE;
-
-	createInfo.oldSwapchain = vk::SwapchainKHR(nullptr);
-
-	try {
-		swapChain = device->createSwapchainKHR(createInfo);
-	}
-	catch (vk::SystemError err) {
-		throw std::runtime_error("failed to create swap chain!");
-	}
-
-	swapChainImages = device->getSwapchainImagesKHR(swapChain);
-
-	swapChainImageFormat = surfaceFormat.format;
-	swapChainExtent = extent;
 }
 
 void CVulkanView::createImageViews()
 {
-	swapChainImageViews.resize(swapChainImages.size());
+	/*swapChainImageViews.resize(swapChainImages.size());
 
 	for (size_t i = 0; i < swapChainImages.size(); i++) {
 		vk::ImageViewCreateInfo createInfo = {};
@@ -396,13 +323,13 @@ void CVulkanView::createImageViews()
 		catch (vk::SystemError err) {
 			throw std::runtime_error("failed to create image views!");
 		}
-	}
+	}*/
 }
 
 void CVulkanView::createRenderPass()
 {
 	vk::AttachmentDescription colorAttachment = {};
-	colorAttachment.format = swapChainImageFormat;
+	colorAttachment.format = m_swapChainData.colorFormat;
 	colorAttachment.samples = vk::SampleCountFlagBits::e1;
 	colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
 	colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
@@ -437,7 +364,7 @@ void CVulkanView::createRenderPass()
 	renderPassInfo.pDependencies = &dependency;
 
 	try {
-		renderPass = device->createRenderPass(renderPassInfo);
+		renderPass = m_device->createRenderPass(renderPassInfo);
 	}
 	catch (vk::SystemError err) {
 		throw std::runtime_error("failed to create render pass!");
@@ -446,9 +373,6 @@ void CVulkanView::createRenderPass()
 
 void CVulkanView::createGraphicsPipeline()
 {
-	//TCHAR currentDirectory[MAX_PATH] = { 0 };
-	//GetModuleFileName(NULL, currentDirectory, MAX_PATH);
-
 	std::filesystem::path currentDirectory = std::filesystem::current_path();
 
 	auto vertShaderCode = readFile(currentDirectory.wstring() + _T("/shaders/vert.spv"));
@@ -483,14 +407,14 @@ void CVulkanView::createGraphicsPipeline()
 	vk::Viewport viewport = {};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = (float)swapChainExtent.width;
-	viewport.height = (float)swapChainExtent.height;
+	viewport.width = (float)m_extent.width;
+	viewport.height = (float)m_extent.height;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
 	vk::Rect2D scissor = {};
-	scissor.offset = VkOffset2D(0, 0);
-	scissor.extent = swapChainExtent;
+	scissor.offset = vk::Offset2D(0, 0);
+	scissor.extent = m_extent;
 
 	vk::PipelineViewportStateCreateInfo viewportState = {};
 	viewportState.viewportCount = 1;
@@ -530,7 +454,7 @@ void CVulkanView::createGraphicsPipeline()
 	pipelineLayoutInfo.pushConstantRangeCount = 0;
 
 	try {
-		pipelineLayout = device->createPipelineLayout(pipelineLayoutInfo);
+		pipelineLayout = m_device->createPipelineLayout(pipelineLayoutInfo);
 	}
 	catch (vk::SystemError err) {
 		throw std::runtime_error("failed to create pipeline layout!");
@@ -551,7 +475,7 @@ void CVulkanView::createGraphicsPipeline()
 	pipelineInfo.basePipelineHandle = nullptr;
 
 	try {
-		graphicsPipeline = device->createGraphicsPipeline(nullptr, pipelineInfo).value;
+		graphicsPipeline = m_device->createGraphicsPipeline(nullptr, pipelineInfo).value;
 	}
 	catch (vk::SystemError err) {
 		throw std::runtime_error("failed to create graphics pipeline!");
@@ -560,28 +484,10 @@ void CVulkanView::createGraphicsPipeline()
 
 void CVulkanView::createFramebuffers()
 {
-	swapChainFramebuffers.resize(swapChainImageViews.size());
+	utils::DepthBufferData depthBufferData(m_physicalDevice, m_device.get(), vk::Format::eD16Unorm, m_extent);
 
-	for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-		vk::ImageView attachments[] = {
-			swapChainImageViews[i]
-		};
+	m_framebuffers = utils::createFramebuffers(m_device.get(), renderPass, m_swapChainData.imageViews, depthBufferData.imageView, m_extent);
 
-		vk::FramebufferCreateInfo framebufferInfo = {};
-		framebufferInfo.renderPass = renderPass;
-		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments = attachments;
-		framebufferInfo.width = swapChainExtent.width;
-		framebufferInfo.height = swapChainExtent.height;
-		framebufferInfo.layers = 1;
-
-		try {
-			swapChainFramebuffers[i] = device->createFramebuffer(framebufferInfo);
-		}
-		catch (vk::SystemError err) {
-			throw std::runtime_error("failed to create framebuffer!");
-		}
-	}
 }
 
 void CVulkanView::createCommandPool()
@@ -592,7 +498,7 @@ void CVulkanView::createCommandPool()
 	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
 	try {
-		commandPool = device->createCommandPool(poolInfo);
+		commandPool = m_device->createCommandPool(poolInfo);
 	}
 	catch (vk::SystemError err) {
 		throw std::runtime_error("failed to create command pool!");
@@ -601,7 +507,7 @@ void CVulkanView::createCommandPool()
 
 void CVulkanView::createCommandBuffers()
 {
-	commandBuffers.resize(swapChainFramebuffers.size());
+	commandBuffers.resize(m_framebuffers.size());
 
 	vk::CommandBufferAllocateInfo allocInfo = {};
 	allocInfo.commandPool = commandPool;
@@ -609,7 +515,7 @@ void CVulkanView::createCommandBuffers()
 	allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
 	try {
-		commandBuffers = device->allocateCommandBuffers(allocInfo);
+		commandBuffers = m_device->allocateCommandBuffers(allocInfo);
 	}
 	catch (vk::SystemError err) {
 		throw std::runtime_error("failed to allocate command buffers!");
@@ -628,9 +534,9 @@ void CVulkanView::createCommandBuffers()
 
 		vk::RenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.renderPass = renderPass;
-		renderPassInfo.framebuffer = swapChainFramebuffers[i];
+		renderPassInfo.framebuffer = m_framebuffers[i];
 		renderPassInfo.renderArea.offset = VkOffset2D(0, 0);
-		renderPassInfo.renderArea.extent = swapChainExtent;
+		renderPassInfo.renderArea.extent = m_extent;
 
 		vk::ClearValue clearColor = { std::array<float, 4>{ 0.0f, 0.0f, 0.0f, 1.0f } };
 		renderPassInfo.clearValueCount = 1;
@@ -661,9 +567,9 @@ void CVulkanView::createSyncObjects()
 
 	try {
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-			imageAvailableSemaphores[i] = device->createSemaphore({});
-			renderFinishedSemaphores[i] = device->createSemaphore({});
-			inFlightFences[i] = device->createFence({ vk::FenceCreateFlagBits::eSignaled });
+			imageAvailableSemaphores[i] = m_device->createSemaphore({});
+			renderFinishedSemaphores[i] = m_device->createSemaphore({});
+			inFlightFences[i] = m_device->createFence({ vk::FenceCreateFlagBits::eSignaled });
 		}
 	}
 	catch (vk::SystemError err) {
@@ -676,27 +582,27 @@ void CVulkanView::cleanupVulkanAPI()
 	// NOTE: instance destruction is handled by UniqueInstance, same for device
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		device->destroySemaphore(renderFinishedSemaphores[i]);
-		device->destroySemaphore(imageAvailableSemaphores[i]);
-		device->destroyFence(inFlightFences[i]);
+		m_device->destroySemaphore(renderFinishedSemaphores[i]);
+		m_device->destroySemaphore(imageAvailableSemaphores[i]);
+		m_device->destroyFence(inFlightFences[i]);
 	}
 
-	device->destroyCommandPool(commandPool);
+	m_device->destroyCommandPool(commandPool);
 
-	for (auto framebuffer : swapChainFramebuffers) {
-		device->destroyFramebuffer(framebuffer);
+	for (auto framebuffer : m_framebuffers) {
+		m_device->destroyFramebuffer(framebuffer);
 	}
 
-	device->destroyPipeline(graphicsPipeline);
-	device->destroyPipelineLayout(pipelineLayout);
-	device->destroyRenderPass(renderPass);
+	m_device->destroyPipeline(graphicsPipeline);
+	m_device->destroyPipelineLayout(pipelineLayout);
+	m_device->destroyRenderPass(renderPass);
 
-	for (auto imageView : swapChainImageViews) {
-		device->destroyImageView(imageView);
+	for (auto imageView : m_swapChainData.imageViews) {
+		m_device->destroyImageView(imageView);
 	}
 
 	// not using UniqeSwapchain to destroy in correct order - before the surface
-	device->destroySwapchainKHR(swapChain);
+	m_device->destroySwapchainKHR(m_swapChainData.swapChain);
 
 	// surface is created by glfw, therefore not using a Unique handle
 	m_VkInstance->destroySurfaceKHR(surface);
@@ -735,7 +641,7 @@ bool CVulkanView::checkValidationLayerSupport()
 
 vk::UniqueShaderModule CVulkanView::createShaderModule(const std::vector<char>& code) {
 	try {
-		return device->createShaderModuleUnique({
+		return m_device->createShaderModuleUnique({
 			vk::ShaderModuleCreateFlags(),
 			code.size(),
 			reinterpret_cast<const uint32_t*>(code.data())
@@ -814,6 +720,7 @@ bool CVulkanView::isDeviceSuitable(const vk::PhysicalDevice& device) {
 
 bool CVulkanView::checkDeviceExtensionSupport(const vk::PhysicalDevice& device)
 {
+	auto deviceExtensions = utils::getDeviceExtensions();
 	std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
 	for (const auto& extension : device.enumerateDeviceExtensionProperties())

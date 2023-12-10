@@ -102,13 +102,14 @@ protected:
 protected:
     vk::UniqueInstance m_VkInstance;
     VkDebugUtilsMessengerEXT m_VkDebugMessenger;
-    vk::SurfaceKHR surface;
+    vk::SurfaceKHR m_surface;
 
     vk::PhysicalDevice m_physicalDevice;
     vk::UniqueDevice m_device;
 
-    vk::Queue graphicsQueue;
-    vk::Queue presentQueue;
+    vk::Queue m_graphicsQueue;
+    vk::Queue m_presentQueue;
+    std::pair<uint32_t, uint32_t> m_graphicsAndPresentQueueFamilyIndex;
 
     //vk::SwapchainKHR swapChain;
     //std::vector<vk::Image> swapChainImages;
@@ -126,7 +127,8 @@ protected:
     vk::Pipeline graphicsPipeline;
 
     VkCommandPool commandPool;
-    std::vector<vk::CommandBuffer, std::allocator<vk::CommandBuffer>> commandBuffers;
+    //std::vector<vk::CommandBuffer, std::allocator<vk::CommandBuffer>> commandBuffers;
+    vk::CommandBuffer commandBuffer;
 
     std::vector<vk::Semaphore> imageAvailableSemaphores;
     std::vector<vk::Semaphore> renderFinishedSemaphores;

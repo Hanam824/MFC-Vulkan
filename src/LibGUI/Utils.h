@@ -7,6 +7,8 @@ namespace utils
 {
     namespace su
     {
+        const uint64_t FenceTimeout = 100000000;
+
         glm::mat4x4 createModelViewProjectionClipMatrix(vk::Extent2D const& extent);
 
         template <typename Func>

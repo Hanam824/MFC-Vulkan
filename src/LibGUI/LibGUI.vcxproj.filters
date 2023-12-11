@@ -97,9 +97,6 @@
     <ClInclude Include="Shader.h">
       <Filter>Shader</Filter>
     </ClInclude>
-    <ClInclude Include="geometries.hpp">
-      <Filter>Shader</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="LibGUI.rc">

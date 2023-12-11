@@ -16,11 +16,7 @@
 
 #include "Utils.h"
 
-
-
-
-struct QueueFamilyIndices
-{
+struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
     std::optional<uint32_t> presentFamily;
 
@@ -29,12 +25,12 @@ struct QueueFamilyIndices
     }
 };
 
-struct SwapChainSupportDetails
-{
+struct SwapChainSupportDetails{
     vk::SurfaceCapabilitiesKHR capabilities;
     std::vector<vk::SurfaceFormatKHR> formats;
     std::vector<vk::PresentModeKHR> presentModes;
 };
+
 
 class AFX_EXT_CLASS CVulkanView : public CViewBase
 {
@@ -73,7 +69,7 @@ protected:
 
 protected:
     void createInstance();
-    void setupDebugCallback();
+    void setupDebugMessenger();
     void createSurface();
     void pickPhysicalDevice();
     void createLogicalDevice();
@@ -83,57 +79,60 @@ protected:
     void createGraphicsPipeline();
     void createFramebuffers();
     void createCommandPool();
-    void createCommandBuffers();
+    void createCommandBuffer();
+
     void createSyncObjects();
 
     void cleanupVulkanAPI();
 
     // support
-	bool checkValidationLayerSupport();
-    vk::UniqueShaderModule createShaderModule(const std::vector<char>& code);
+    vk::ShaderModule createShaderModule(const std::vector<char>& code);
     vk::SurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
-    vk::PresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR> availablePresentModes);
+    vk::PresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
     vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
-    SwapChainSupportDetails querySwapChainSupport(const vk::PhysicalDevice& device);
+    SwapChainSupportDetails querySwapChainSupport(vk::PhysicalDevice device);
+    bool isDeviceSuitable(vk::PhysicalDevice device);
+    bool checkDeviceExtensionSupport(vk::PhysicalDevice device);
     QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice device);
 
-    bool isDeviceSuitable(const vk::PhysicalDevice& device);
-    bool checkDeviceExtensionSupport(const vk::PhysicalDevice& device);
+    std::vector<std::string> getDeviceExtensions();
+    std::vector<std::string> getInstanceExtensions();
+    std::vector<std::string> getRequiredExtensions();
+    std::vector<const char*> gatherExtensions(const std::vector<std::string>& extensions);
+    std::vector<const char*> gatherLayers(const std::vector<std::string>& layers);
+
+    bool checkValidationLayerSupport();
+
+    void recordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex);
+
 protected:
-    vk::UniqueInstance m_VkInstance;
-    VkDebugUtilsMessengerEXT m_VkDebugMessenger;
-    vk::SurfaceKHR m_surface;
+    vk::Instance instance;
+    VkDebugUtilsMessengerEXT debugMessenger;
+    vk::SurfaceKHR surface;
 
-    vk::PhysicalDevice m_physicalDevice;
-    vk::UniqueDevice m_device;
+    vk::PhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    vk::Device device;
 
-    vk::Queue m_graphicsQueue;
-    vk::Queue m_presentQueue;
-    std::pair<uint32_t, uint32_t> m_graphicsAndPresentQueueFamilyIndex;
+    vk::Queue graphicsQueue;
+    vk::Queue presentQueue;
 
-    //vk::SwapchainKHR swapChain;
-    //std::vector<vk::Image> swapChainImages;
-    //vk::Format swapChainImageFormat;
-    //vk::Extent2D swapChainExtent;
-    //std::vector<vk::ImageView> swapChainImageViews;
-    //std::vector<vk::Framebuffer> swapChainFramebuffers;
-
-    vk::Extent2D m_extent;
-    utils::SwapChainData m_swapChainData;
-    std::vector<vk::Framebuffer> m_framebuffers;
+    vk::SwapchainKHR swapChain;
+    std::vector<vk::Image> swapChainImages;
+    vk::Format swapChainImageFormat;
+    vk::Extent2D swapChainExtent;
+    std::vector<vk::ImageView> swapChainImageViews;
+    std::vector<vk::Framebuffer> swapChainFramebuffers;
 
     vk::RenderPass renderPass;
     vk::PipelineLayout pipelineLayout;
     vk::Pipeline graphicsPipeline;
 
-    VkCommandPool commandPool;
-    //std::vector<vk::CommandBuffer, std::allocator<vk::CommandBuffer>> commandBuffers;
+    vk::CommandPool commandPool;
     vk::CommandBuffer commandBuffer;
 
-    std::vector<vk::Semaphore> imageAvailableSemaphores;
-    std::vector<vk::Semaphore> renderFinishedSemaphores;
-    std::vector<vk::Fence> inFlightFences;
-    size_t currentFrame = 0;
+    vk::Semaphore imageAvailableSemaphore;
+    vk::Semaphore renderFinishedSemaphore;
+    vk::Fence inFlightFence;
 
 private:
 	vk::ApplicationInfo m_VkAppInfo;

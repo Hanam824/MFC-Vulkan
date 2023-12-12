@@ -256,71 +256,48 @@ void CVulkanView::pickPhysicalDevice()
 void CVulkanView::createLogicalDevice()
 {
     QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-
-    std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
     float queuePriority = 1.0f;
+    std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
     for (uint32_t queueFamily : uniqueQueueFamilies)
     {
-        //VkDeviceQueueCreateInfo queueCreateInfo{};
-        //queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        //queueCreateInfo.queueFamilyIndex = queueFamily;
-        //queueCreateInfo.queueCount = 1;
-        //queueCreateInfo.pQueuePriorities = &queuePriority;
-        //queueCreateInfos.push_back(queueCreateInfo);
-
         queueCreateInfos.push_back(vk::DeviceQueueCreateInfo()
             .setQueueFamilyIndex(queueFamily)
             .setQueueCount(1)
             .setQueuePriorities(queuePriority));
     }
 
-    //VkDeviceCreateInfo createInfo{};
-    //createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-
-    //createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-    //createInfo.pQueueCreateInfos = queueCreateInfos.data();
-
-    //createInfo.pEnabledFeatures = &deviceFeatures;
-
-   
-    //createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-    //createInfo.ppEnabledExtensionNames = deviceExtensions.data();
-
-    //if (enableValidationLayers) {
-    //    createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-    //    createInfo.ppEnabledLayerNames = validationLayers.data();
-    //}
-    //else {
-    //    createInfo.enabledLayerCount = 0;
-    //}
-
     vk::PhysicalDeviceFeatures deviceFeatures{};
 
     auto deviceEx = getDeviceExtensions();
     auto deviceExtensions = gatherExtensions(deviceEx);
 
+    auto createInfo = vk::DeviceCreateInfo()
+        .setPQueueCreateInfos(queueCreateInfos.data())
+        .setQueueCreateInfoCount(static_cast<uint32_t>(queueCreateInfos.size()))
+        .setPEnabledFeatures(&deviceFeatures)
+        .setPEnabledExtensionNames(deviceExtensions)
+        .setEnabledExtensionCount(static_cast<uint32_t>(deviceExtensions.size()));
+
+    if (enableValidationLayers) 
+    {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+    }
+    else 
+    {
+        createInfo.enabledLayerCount = 0;
+    }
+
     try
     {
-        device = physicalDevice.createDevice(vk::DeviceCreateInfo()
-            .setQueueCreateInfos(queueCreateInfos)
-            .setQueueCreateInfoCount(static_cast<uint32_t>(queueCreateInfos.size()))
-            .setPEnabledFeatures(&deviceFeatures)
-            .setPEnabledExtensionNames(deviceExtensions)
-            .setEnabledExtensionCount(static_cast<uint32_t>(deviceExtensions.size()))
-            .setPEnabledLayerNames(validationLayers)
-            .setEnabledLayerCount(static_cast<uint32_t>(validationLayers.size()))
-        );
+        device = physicalDevice.createDevice(createInfo);
     }
     catch (const std::exception&)
     {
         throw std::runtime_error("failed to create logical device!");
     }
-
-    //if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
-    //    throw std::runtime_error("failed to create logical device!");
-    //}
 
     graphicsQueue = device.getQueue(indices.graphicsFamily.value(), 0);
     presentQueue = device.getQueue(indices.presentFamily.value(), 0);

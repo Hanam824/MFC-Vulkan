@@ -601,7 +601,11 @@ void CVulkanView::recordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t 
         throw std::runtime_error("failed to begin recording command buffer!");
     }
 
-	auto clearColor = vk::ClearValue(vk::ClearColorValue({ 1.0f, 0.8f, 0.4f, 0.0f }));
+    // intel color
+    //auto clearColor = vk::ClearValue(vk::ClearColorValue({ 1.0f, 0.8f, 0.4f, 0.0f }));
+
+    // microsoft color
+    auto clearColor = vk::ClearValue(vk::ClearColorValue({ 0.0f, 0.2f, 0.4f, 1.0f }));
 
     auto renderPassInfo = vk::RenderPassBeginInfo()
         .setRenderPass(renderPass)
@@ -754,7 +758,13 @@ vk::SurfaceFormatKHR CVulkanView::chooseSwapSurfaceFormat(const std::vector<vk::
 {
     for (const auto& availableFormat : availableFormats)
     {
-        if (availableFormat.format == vk::Format::eB8G8R8A8Srgb && availableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
+        /*if (availableFormat.format == vk::Format::eB8G8R8A8Srgb && availableFormat.colorSpace == vk::ColorSpaceKHR::eVkColorspaceSrgbNonlinear)
+        {
+            return availableFormat;
+        }*/
+
+        // this code will keep original color, not convert RGB colorspace -> sRGB colorspace
+        if (availableFormat.format == vk::Format::eB8G8R8A8Unorm && availableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
         {
             return availableFormat;
         }

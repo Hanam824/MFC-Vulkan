@@ -653,7 +653,11 @@ void CVulkanView::createSyncObjects()
 	try
 	{
 		imageAvailableSemaphore = device.createSemaphore(vk::SemaphoreCreateInfo());
-		renderFinishedSemaphore = device.createSemaphore(vk::SemaphoreCreateInfo());
+
+		renderFinishedSemaphores.resize(swapChainImages.size());
+		for (auto& semaphore : renderFinishedSemaphores)
+			semaphore = device.createSemaphore(vk::SemaphoreCreateInfo());
+
 		inFlightFence = device.createFence(vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled));
 	}
 	catch (const std::exception&)
@@ -679,7 +683,7 @@ void CVulkanView::drawFrame()
 
     vk::Semaphore waitSemaphores[] = { imageAvailableSemaphore };
     vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput };
-    vk::Semaphore signalSemaphores[] = { renderFinishedSemaphore };
+    vk::Semaphore signalSemaphores[] = { renderFinishedSemaphores[imageIndex] };
 
     auto submitInfo = vk::SubmitInfo()
         .setWaitSemaphoreCount(1)
@@ -705,7 +709,11 @@ void CVulkanView::drawFrame()
 
 void CVulkanView::cleanupVulkanAPI()
 {
-    device.destroySemaphore(renderFinishedSemaphore);
+    device.waitIdle();
+
+    for (auto semaphore : renderFinishedSemaphores) {
+        device.destroySemaphore(semaphore);
+    }
     device.destroySemaphore(imageAvailableSemaphore);
     device.destroyFence(inFlightFence);
 

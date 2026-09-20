@@ -132,7 +132,8 @@ protected:
     vk::CommandBuffer commandBuffer;
 
     vk::Semaphore imageAvailableSemaphore;
-    vk::Semaphore renderFinishedSemaphore;
+    // one per swapchain image: a present op keeps its semaphore busy until that image is re-acquired
+    std::vector<vk::Semaphore> renderFinishedSemaphores;
     vk::Fence inFlightFence;
 
 private:
